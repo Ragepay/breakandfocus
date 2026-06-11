@@ -15,6 +15,7 @@ import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { appStore } from "@/store";
+import { validatePassword } from "@/utils/validatePassword";
 
 export default function RegisterForm() {
   // const [email, setEmail] = useState('')
@@ -43,36 +44,10 @@ export default function RegisterForm() {
       hideLoader();
       router.push("/register/success");
     } else {
-      toast.error("No se pudo crear el usuario");
+      toast.error(response.message || "No se pudo crear el usuario");
       hideLoader();
     }
   };
-  const validatePassword = (password: string) => {
-    const errors = [];
-
-    if (password.length < 8) {
-      errors.push("La contraseña debe tener al menos 8 caracteres");
-    }
-
-    if (!/\d/.test(password)) {
-      errors.push("La contraseña debe tener al menos un número");
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      errors.push("La contraseña debe tener al menos una mayúscula");
-    }
-
-    if (!/[a-z]/.test(password)) {
-      errors.push("La contraseña debe tener al menos una minúscula");
-    }
-
-    if (!/[ !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/.test(password)) {
-      errors.push("La contraseña debe tener al menos un carácter especial");
-    }
-
-    return errors.length > 0 ? errors[0] : undefined;
-  };
-
   return (
     <div className="h-screen flex items-center justify-center">
       <Card className="w-full max-w-md mx-auto ">

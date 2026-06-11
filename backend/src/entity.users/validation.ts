@@ -5,7 +5,7 @@ import { UserRole } from './model';
 const userRegistrationSchema = z.object({
   email: z.string().email({ message: 'Invalid email format.' }),
   username: z.string().min(1, { message: 'Username is required.' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters long.' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters long.' }),
   role: z.nativeEnum(UserRole).default(UserRole.USER),
 });
 

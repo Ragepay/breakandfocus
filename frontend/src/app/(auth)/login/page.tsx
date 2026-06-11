@@ -12,32 +12,6 @@ import { Input } from "@/components/ui/input";
 import { appStore } from "@/store";
 import ResetPasswordModal from "@/components/ResetPasswordModal";
 
-const validatePassword = (password: string) => {
-  const errors = [];
-
-  if (password.length < 8) {
-    errors.push("La contraseña debe tener al menos 8 caracteres");
-  }
-
-  if (!/\d/.test(password)) {
-    errors.push("La contraseña debe tener al menos un número");
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    errors.push("La contraseña debe tener al menos una mayúscula");
-  }
-
-  if (!/[a-z]/.test(password)) {
-    errors.push("La contraseña debe tener al menos una minúscula");
-  }
-
-  if (!/[ !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/.test(password)) {
-    errors.push("La contraseña debe tener al menos un carácter especial");
-  }
-
-  return errors.length > 0 ? errors[0] : undefined;
-};
-
 export default function LoginPage() {
   const { formState, setFormState } = useFormState({ email: "", password: "" });
   const { fetchData } = useFetchData();
@@ -56,7 +30,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
     showLoader();
-    const { status, response } = await fetchData("loginUser", formState);
+    const { status, response, message } = await fetchData("loginUser", formState);
 
     if (status) {
       const { _id, email, role } = response.data;
@@ -68,7 +42,7 @@ export default function LoginPage() {
       setIsLoading(false);
       router.push("home");
     } else {
-      toast.error("Usuario incorrecto");
+      toast.error(message || "Usuario incorrecto");
       hideLoader();
       setIsLoading(false);
     }
@@ -116,7 +90,6 @@ export default function LoginPage() {
               required
               value={formState.password}
               onChange={setFormState}
-              error={validatePassword(formState.password)}
             />
           </div>
           <div className="flex items-center space-x-2">

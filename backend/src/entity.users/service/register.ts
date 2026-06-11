@@ -16,9 +16,10 @@ export async function register(user: UserCreationAttributes, password: string): 
 
 
     if (!registeredUser) throw new Error("Unable to register user.");
-    if (registeredUser) {
-      await sendMailRegister(registeredUser.email, password)
-    }
+
+    // Envío de mail en segundo plano: no bloquea la respuesta ni hace fallar el
+    // registro si el SMTP falla (sendMailRegister ya captura su propio error).
+    void sendMailRegister(registeredUser.email, password);
 
     return registeredUser;
   } catch (err) {

@@ -30,6 +30,7 @@ function Home() {
   const [buttonText, setButtonText] = useState("Meditar");
   // const [fetchError, setFetchError] = useState<string | null>(null);
   const fetchCalled = useRef(false);
+  const sessionStartRef = useRef<number | null>(null);
 
   const localTechniques = useMemo(() => [{
     name: "Pomodoro",
@@ -107,6 +108,17 @@ function Home() {
     }
   }, [localTechniques]);
 
+  // Auto-selecciona la primera técnica para que "Comenzar" quede habilitado de entrada
+  useEffect(() => {
+    if (!currentTechnique && techniques.length > 0) {
+      const t = techniques[0];
+      setCurrentTechnique(t);
+      setTimer(t.focus_time * factor);
+      setBreakTime(t.break_time * factor);
+      setIsWorkTime(true);
+    }
+  }, [techniques, currentTechnique]);
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -138,64 +150,69 @@ function Home() {
   useEffect(() => {
 
     let interval: NodeJS.Timeout | null = null;
-    const expected_total_time = (currentTechnique?.focus_time ?? 0) + (currentTechnique?.break_time ?? 0);
-    const startTime = Date.now();
-    
+
     if (isRunning && timer > 0) {
+      // Marca el inicio real de la sesión de enfoque (una sola vez por ciclo)
+      if (isWorkTime && sessionStartRef.current === null) {
+        sessionStartRef.current = Date.now();
+      }
       interval = setInterval(() => {
         setTimer((prevTime) => prevTime - 1);
       }, 1000);
     } else if (timer === 0 && isWorkTime) {
+      // Terminó el enfoque -> arranca el break (en segundos: minutos * factor)
       setIsWorkTime(false);
-      if (currentTechnique && session < currentTechnique?.cycles_before_long_break) {
-        setTimer(currentTechnique?.break_time ?? 5);
-        setBreakTime(currentTechnique?.break_time ?? 5);
+      if (currentTechnique && session < currentTechnique.cycles_before_long_break) {
+        setTimer((currentTechnique.break_time ?? 5) * factor);
+        setBreakTime((currentTechnique.break_time ?? 5) * factor);
         setButtonText(getRandomButtonText());
         showSystemNotification("¡Es hora de tu break corto!");
       } else {
-        setTimer(currentTechnique?.long_break_time ?? 15);
-        setBreakTime(currentTechnique?.long_break_time ?? 15);
+        setTimer((currentTechnique?.long_break_time ?? 15) * factor);
+        setBreakTime((currentTechnique?.long_break_time ?? 15) * factor);
         setButtonText("Es hora de un largo descanso");
         showSystemNotification("¡Es hora de tu break largo!");
         setSession(1);
       }
       setShowNotification(true);
-      setIsRunning(false); // Pause until notification is closed
+      setIsRunning(false); // Pausa hasta cerrar la notificación
     } else if (timer === 0 && !isWorkTime) {
-
+      // Terminó el break -> vuelve al enfoque y registra la sesión (tiempos en segundos)
       setIsWorkTime(true);
-      setTimer(currentTechnique?.focus_time ?? 25);  
-      
+      setTimer((currentTechnique?.focus_time ?? 25) * factor);
       setSession(session + 1);
       setIsRunning(false);
-      const end_time = Date.now();
-      const real_focus_time = end_time - startTime;
-      const real_break_time = expected_total_time - real_focus_time;
-      const real_break_count = Math.floor(real_break_time / breakTime);
-      const score = real_focus_time / expected_total_time;
-      const data = {
-        user_id: userId,
-        technique_id: techniqueid,
-        start_time: new Date(startTime),
-        end_time: new Date(end_time),
-        expected_total_time,
-        real_focus_time,
-        real_break_time,
-        real_break_count,
-        finished: true,
-        score,
-      };
-      services
-        .createSession(data)
-        .catch((error) => {
-          console.error(error);
-        });
+
+      const focusSeconds = (currentTechnique?.focus_time ?? 25) * factor;
+      const breakSeconds = breakTime;
+      const startTime = sessionStartRef.current ?? Date.now();
+      const endTime = Date.now();
+      sessionStartRef.current = null;
+
+      if (userId && techniqueid) {
+        services
+          .createSession({
+            user_id: userId,
+            technique_id: techniqueid,
+            start_time: new Date(startTime),
+            end_time: new Date(endTime),
+            expected_total_time: focusSeconds + breakSeconds,
+            real_focus_time: focusSeconds,
+            real_break_time: breakSeconds,
+            real_break_count: 1,
+            finished: true,
+            score: 1,
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning, timer, isWorkTime, getRandomButtonText, showSystemNotification, techniques, breakTime, currentTechnique?.focus_time, currentTechnique, session, userId, techniqueid]);
+  }, [isRunning, timer, isWorkTime, getRandomButtonText, showSystemNotification, breakTime, currentTechnique, session, userId, techniqueid]);
 
   const closeNotification = () => {
     setShowNotification(false);
@@ -261,11 +278,35 @@ function Home() {
         {/* Timer container */}
 
         <div className="text-center mt-10 ">
-          <div className="container mx-auto mb-5 bg-gradient-to-r from-green-400 to-blue-300 py-12 rounded-2xl shadow-md max-w-[600px]">
-            <p className=" text-8xl font-extrabold text-white">
-              {formatTime(timer)}
-            </p>
-          </div>
+          {(() => {
+            const total = isWorkTime
+              ? (currentTechnique?.focus_time ?? 25) * factor
+              : breakTime || 1;
+            const pct = Math.max(0, Math.min(1, 1 - timer / total));
+            const R = 130;
+            const CIRC = 2 * Math.PI * R;
+            return (
+              <div className="relative mx-auto mb-8 w-[300px] h-[300px]">
+                <svg className="-rotate-90 w-full h-full" viewBox="0 0 300 300">
+                  <circle cx="150" cy="150" r={R} fill="none" stroke="#e5e7eb" strokeWidth="16" />
+                  <circle
+                    cx="150" cy="150" r={R} fill="none"
+                    stroke={isWorkTime ? "#3b82f6" : "#22c55e"}
+                    strokeWidth="16" strokeLinecap="round"
+                    strokeDasharray={CIRC}
+                    strokeDashoffset={CIRC * (1 - pct)}
+                    className="transition-all duration-1000 ease-linear"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <p className="text-6xl font-extrabold text-gray-800">{formatTime(timer)}</p>
+                  <span className="mt-1 text-sm font-medium uppercase tracking-wide text-gray-400">
+                    {isWorkTime ? "Enfoque" : "Descanso"}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
           <button
             onClick={toggleTimer}
             disabled={!currentTechnique}
