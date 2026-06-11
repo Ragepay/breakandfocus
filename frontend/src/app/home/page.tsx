@@ -31,8 +31,7 @@ function Home() {
   // const [fetchError, setFetchError] = useState<string | null>(null);
   const fetchCalled = useRef(false);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const localTechniques = [{
+  const localTechniques = useMemo(() => [{
     name: "Pomodoro",
     _id: "613b1fcf8f1d1e2f4a12b3c7",
     focus_time: 25,
@@ -61,7 +60,7 @@ function Home() {
     cycles_before_long_break: 4,
     active_pause: true,
     description : "Recarga tu energía en pocos minutos. Realizar breves ejercicios durante la jornada laboral ayuda a reducir el estrés, mejorar la concentración y evitar la fatiga. Dedica unos minutos a estiramientos, respiración profunda o movimientos ligeros para revitalizar tu cuerpo y mente. ¡Incorpora estas pausas en tu rutina diaria para mantener un equilibrio saludable entre trabajo y bienestar!"
-  }];
+  }], []);
 
   const showSystemNotification = useCallback((message: string) => {
     if (Notification.permission === "granted") {
@@ -97,18 +96,16 @@ function Home() {
       const fetchData = async () => {
         try {
           const response = await services.getTechniques();
-          setTechniques(Object.values(response.data.data)); // convierte el objeto en un arreglo
+          const fetched = Object.values(response.data.data) as Technique[];
+          setTechniques(fetched.length > 0 ? fetched : localTechniques);
         } catch {
-          // console.error("Error al obtener las técnicas:", apiError);
-          // setFetchError("Para registrar tu progreso, deberías iniciar sesión");
           setTechniques(localTechniques);
-          // console.log("local", localTechniques[0]);
         }
       };
 
       fetchData();
     }
-  }, [localTechniques, techniques]);
+  }, [localTechniques]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -120,6 +117,7 @@ function Home() {
 
 
   const toggleTimer = () => {
+    if (!currentTechnique) return;
     setIsRunning((prev) => !prev);
   };
 
@@ -140,10 +138,9 @@ function Home() {
   useEffect(() => {
 
     let interval: NodeJS.Timeout | null = null;
-    const expected_total_time = currentTechnique?.focus_time ?? 0 + (currentTechnique?.break_time ?? 0);
+    const expected_total_time = (currentTechnique?.focus_time ?? 0) + (currentTechnique?.break_time ?? 0);
     const startTime = Date.now();
     
-    console.log(userId, techniqueid)
     if (isRunning && timer > 0) {
       interval = setInterval(() => {
         setTimer((prevTime) => prevTime - 1);
@@ -190,9 +187,6 @@ function Home() {
       };
       services
         .createSession(data)
-        .then((response) => {
-          console.log(response);
-        })
         .catch((error) => {
           console.error(error);
         });
@@ -219,8 +213,6 @@ function Home() {
   // // setIsModalOpen(false); // Cerrar el modal
   // };
 
-  // console.log(techniques)
-
   function handleTime(technique: Technique): void {
     setCurrentTechnique(technique);
     // console.log(currentTechnique)
@@ -228,10 +220,6 @@ function Home() {
     setBreakTime(technique.break_time * factor);
     setIsWorkTime(true);
   }
-  console.log(techniques)
-
-
- 
   return (
     <div className="min-h-screen  flex flex-col items-center justify-around p-4">
       <button className="absolute bottom-20 right-4 bg-green-50 p-2 rounded-xl shadow-lg shadow-gray-500/50" onClick={toggleUserMenu}>
@@ -280,13 +268,19 @@ function Home() {
           </div>
           <button
             onClick={toggleTimer}
-            className="text-center mt-5 mb-7 bg-gradient-to-b from-green-400 to-blue-400 text-white font-semibold
-                        text-2xl p-4 rounded-full shadow-lg h-[180px] w-[180px]"
+            disabled={!currentTechnique}
+            className={`text-center mt-5 mb-7 bg-gradient-to-b from-green-400 to-blue-400 text-white font-semibold
+                        text-2xl p-4 rounded-full shadow-lg h-[180px] w-[180px] transition-opacity
+                        ${!currentTechnique ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             {isRunning ? "PAUSE" : "COMENZAR"}
           </button>
           <p className="text-xl font-semibold text-blue-600 mt-5">
-            {isWorkTime ? "¡Es hora de Enfocarse!" : "Es hora de tu break"}
+            {!currentTechnique
+              ? "Selecciona una técnica para empezar"
+              : isWorkTime
+              ? "¡Es hora de Enfocarse!"
+              : "Es hora de tu break"}
           </p>
         </div>
       </main>

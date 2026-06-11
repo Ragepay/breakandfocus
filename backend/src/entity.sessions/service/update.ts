@@ -9,6 +9,9 @@ export async function update(sessiondata: SessionUpdateAttributes) {
       start_time,
       end_time,
       expected_total_time,
+      expected_focus_time,
+      expected_break_time,
+      schedule,
       real_focus_time,
       real_break_time,
       real_break_count,
@@ -17,7 +20,7 @@ export async function update(sessiondata: SessionUpdateAttributes) {
     } = sessiondata;
     const updatedSession = await Session.findOneAndUpdate(
       { _id },
-      { user_id, technique_id, start_time, end_time, expected_total_time, real_focus_time, real_break_time, real_break_count, finished, score },
+      { user_id, technique_id, start_time, end_time, expected_total_time, expected_focus_time, expected_break_time, schedule, real_focus_time, real_break_time, real_break_count, finished, score },
       { new: true },
     );
     return updatedSession;

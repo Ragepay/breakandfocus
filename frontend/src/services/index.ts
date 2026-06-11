@@ -10,9 +10,9 @@ const loginUser = async <T>(body: T) => await api.post("/auth/login", body);
 
 const resetPassword = async <T>(body: T) => await api.post("/auth/forgetpassword", body);
 
-const getUserById = async <T>(url: T) => await api.get(`/data/${url}`);
+const getUserById = async (_?: undefined) => await api.get(`/users/getByToken`);
 
-const getTechniques = async () => await api.get("/techniques");
+const getTechniques = async (_?: undefined) => await api.get("/techniques");
 
 const getSessions = async <T>(url: T) => await api.get(`/sessions/${url}`);
 

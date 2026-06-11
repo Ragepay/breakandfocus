@@ -19,7 +19,8 @@ export async function get(user_id: string) {
 
 export async function getById(technique_id: string) {
   try {
-    const technique = await Technique.findById(technique_id).exec();
+    const technique = await Technique.findById(technique_id).exec()
+      ?? await PersonalTechnique.findById(technique_id).exec();
     return technique;
   } catch (err) {
     throw err;

@@ -43,7 +43,7 @@ export default function LoginPage() {
   const { fetchData } = useFetchData();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const isLoading = false;
+  const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showLoader = appStore((state) => state.showLoader);
@@ -54,28 +54,23 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setIsLoading(true);
     showLoader();
     const { status, response } = await fetchData("loginUser", formState);
 
     if (status) {
-      console.log(response);
       const { _id, email, role } = response.data;
       const token = response.token;
 
       toast.success("Usuario correcto");
-      // setUser(response);
-      setUser({
-        token,
-        userData: {
-          _id,
-          email,
-          role,
-        },
-      });
+      setUser({ token, userData: { _id, email, role } });
+      hideLoader();
+      setIsLoading(false);
       router.push("home");
     } else {
       toast.error("Usuario incorrecto");
       hideLoader();
+      setIsLoading(false);
     }
   };
 
@@ -88,7 +83,6 @@ export default function LoginPage() {
   };
 
   const handleResetPassword = async (email: string) => {
-    console.log(`Resetting password for ${email}`);
     const { status } = await fetchData("resetPassword",  {email} );
     if (status) {
       toast.success("Una contraseña ha sido enviada a su correo");
@@ -155,27 +149,11 @@ export default function LoginPage() {
             ¿Ha olvidado su contraseña?
           </span>
         </div>
-        <div className="space-y-3">
-          <Button variant="outline" className="w-full">
-            Iniciar sesión con Google
-          </Button>
-
-          <Button variant="outline" className="w-full">
-            Iniciar sesión con Facebook
-          </Button>
-        </div>
-        <div className="flex items-center justify-center">
-          <div className="border-t border-gray-300 flex-grow"></div>
-          <span className="px-4 bg-white text-gray-500">O</span>
-          <div className="border-t border-gray-300 flex-grow"></div>
-        </div>
         <div className="text-center text-sm">
-          ¿Eres nuevo en este sitio?{" "}
-          <Link href="/register" className="text-blue-600 hover:underline" />
           ¿Eres nuevo en este sitio?{" "}
           <Link
             href="/register"
-            className=" m-2 text-black font-semibold hover:underline"
+            className="m-2 text-black font-semibold hover:underline"
           >
             Regístrate
           </Link>

@@ -37,7 +37,7 @@ export const techniqueUpdateSchema = z.object({
 type techniqueUpdateData = z.infer<typeof techniqueUpdateSchema>;
 
 export const validateUpdateTechniqueData = (techniqueRegisterData: any): parsedValidationResult<techniqueUpdateData> => {
-  const result = techniqueRegistrationSchema.partial().safeParse(techniqueRegisterData);
+  const result = techniqueUpdateSchema.safeParse(techniqueRegisterData);
   const { hasError, errorMessages, userData } = parseValidationResult(result);
 
   return {

@@ -1,11 +1,11 @@
 import request from 'supertest';
 import { describe, it, expect } from '@jest/globals';
-import { getServerUrl } from './setup';
+import { getApp } from './setup';
 
 describe('AUTH - E2E - Login', () => {
 
   it('should login a user with valid credentials', async () => {
-    const response = await request(getServerUrl())
+    const response = await request(getApp())
       .post(`/${process.env.API_VERSION}/auth/login`)
       .send({ email: 'admin@admin.com', password: 'admin1234' });
 
@@ -17,7 +17,7 @@ describe('AUTH - E2E - Login', () => {
 
 
   it('should not login a user with invalid credentials', async () => {
-    const response = await request(getServerUrl())
+    const response = await request(getApp())
       .post(`/${process.env.API_VERSION}/auth/login`)
       .send({ email: 'admin@admin.com', password: 'admin12345' });
 
@@ -28,13 +28,13 @@ describe('AUTH - E2E - Login', () => {
 
 
   it('should block login a user with invalid credentials after 3 attempts', async () => {
-    await request(getServerUrl())
+    await request(getApp())
       .post(`/${process.env.API_VERSION}/auth/login`)
       .send({ email: 'admin@admin.com', password: 'admin12345' });
-    await request(getServerUrl())
+    await request(getApp())
       .post(`/${process.env.API_VERSION}/auth/login`)
       .send({ email: 'admin@admin.com', password: 'admin12345' });
-    const response = await request(getServerUrl())
+    const response = await request(getApp())
       .post(`/${process.env.API_VERSION}/auth/login`)
       .send({ email: 'admin@admin.com', password: 'admin12345' });
 

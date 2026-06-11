@@ -8,12 +8,10 @@ import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Facebook, Mail, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { appStore } from "@/store";
@@ -42,6 +40,7 @@ export default function RegisterForm() {
     const response = await fetchData("registerUser", formState);
 
     if (response.status) {
+      hideLoader();
       router.push("/register/success");
     } else {
       toast.error("No se pudo crear el usuario");
@@ -169,23 +168,6 @@ export default function RegisterForm() {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex flex-col items-center">
-          <div className="flex items-center w-full my-4">
-            <Separator className="flex-1" />
-            <span className="mx-4 text-sm text-muted-foreground">
-              o conéctate con
-            </span>
-            <Separator className="flex-1" />
-          </div>
-          <div className="flex space-x-4">
-            <Button variant="outline" size="icon">
-              <Mail className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon">
-              <Facebook className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardFooter>
       </Card>
     </div>
   );

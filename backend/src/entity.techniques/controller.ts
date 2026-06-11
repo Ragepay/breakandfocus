@@ -39,8 +39,7 @@ export default class Controller {
     try {
       const user_id = req.user as any
       const techniques = await get(user_id?._id as string);
-      if (techniques.length > 0) return ControllerHandler.ok('Techniques found.', res, techniques);
-      return ControllerHandler.notFound('Techniques not found.', res);
+      return ControllerHandler.ok('Techniques found.', res, techniques);
     } catch (err) {
       next(err);
     }

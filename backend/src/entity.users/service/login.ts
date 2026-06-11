@@ -5,7 +5,7 @@ import { UserHelper } from '../helper';
 export async function login(user: UserCredentialsAttributes) {
   try {
     const remainingLoginAttempts = MemoryStorage.addLoginAttempt(user.email);
-    if (remainingLoginAttempts === -1) {
+    if (remainingLoginAttempts < 0) {
       throw new Error("Too many login attempts. Please try again later.");
     }
 

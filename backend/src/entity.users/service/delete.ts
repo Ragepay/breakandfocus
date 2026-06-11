@@ -1,4 +1,4 @@
-import { User, UserAttributes } from '../model.js';
+import { User, UserAttributes } from '../model';
 
 
 export async function deleteUser(value: any) {

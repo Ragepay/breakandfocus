@@ -1,6 +1,5 @@
 import passport from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import jwt from 'jsonwebtoken';
 
 import { User } from '../entity.users/model';
 import { JWT_SECRET } from '../config/environment';
@@ -45,10 +44,5 @@ passport.use(
     }
   )
 );
-
-export const generateToken = (id: string) => {
-  return jwt.sign({ id }, JWT_SECRET, { expiresIn: '1h' });
-}
-
 
 export default passport;

@@ -60,7 +60,6 @@ export default class Controller {
     const user_id = req.params.id ? { id: req.params.id } : req.user;
 
     const { error, value } = DTO.update(req.body, user_id);
-    console.log(value)
     if (error) return ControllerHandler.badRequest(error.message, res)
     try {
       const result = await update(value);
@@ -90,7 +89,7 @@ export default class Controller {
   // -- Get user/s --
   public static async get(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_id = req.params.id ? parseInt(req.params.id as string) : null;
+      const user_id = req.params.id ? req.params.id : null;
       const users = await get(user_id);
       if (users) return ControllerHandler.ok("Users found.", res, users)
       return ControllerHandler.notFound("Users not found.", res)

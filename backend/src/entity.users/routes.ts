@@ -296,9 +296,9 @@ export const userProtectedRoutes = express
 export const adminProtectedRoutes = express
   .Router()
   .get('/users', Controller.get)
-  .get('users/:id', Controller.get)
-  .post('users/admin/register', Controller.register)
-  .put('users/admin/update/:id', Controller.update)
+  .get('/users/:id', Controller.get)
+  .post('/users/admin/register', Controller.register)
+  .put('/users/admin/update/:id', Controller.update)
 
 
 

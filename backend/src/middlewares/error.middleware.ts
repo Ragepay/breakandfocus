@@ -3,11 +3,16 @@ import { Request, Response, NextFunction } from "express";
 import HTTP_STATUS from '../constants/httpStatusCodes';
 
 export function errorHandler(error: any, req: Request, res: Response, next: NextFunction) {
-  console.log(error.stack)
+  const status = error.status ?? error.statusCode ?? HTTP_STATUS.INTERNAL_SERVER_ERROR;
+  const message = error.message || "Internal server error.";
 
-  res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+  if (status >= 500) {
+    console.error(error.stack);
+  }
+
+  res.status(status).json({
     success: false,
-    message: error.message || "Internal server error.",
+    message,
     error: error.errors?.map((e: any) => e.message).join(", ") ?? error.name ?? "InternalServerError"
   });
 }

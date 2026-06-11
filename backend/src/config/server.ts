@@ -1,3 +1,4 @@
+import http from 'http';
 import express from 'express';
 import expressJSDocSwagger from 'express-jsdoc-swagger';
 import cors from 'cors';
@@ -17,16 +18,18 @@ import * as sessionsRouter from '../entity.sessions/routes';
 
 export default class Server {
   public app: express.Application;
-  private server: any;
+  private server!: http.Server;
 
-  constructor() {
+  constructor(options?: { listen?: boolean }) {
     this.app = express();
     this.database();
     this.middlewares();
     this.setupSwagger();
     this.routes();
     this.errorHandler();
-    this.listen();
+    if (options?.listen !== false) {
+      this.listen();
+    }
   }
 
   private async database() {
@@ -84,7 +87,8 @@ export default class Server {
     });
   }
 
-  public close() {
-    this.server.close();
+  public close(callback?: () => void) {
+    this.server.closeAllConnections?.();
+    this.server.close(callback);
   }
 }

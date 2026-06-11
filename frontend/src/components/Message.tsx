@@ -23,7 +23,10 @@ const Message = ({closeNotification, buttonText}: MessageProps) => {
               Descansa tus ojos. Estira tus piernas. Respira. Relájate.
             </p>
             
-              <button className="bg-green-500 text-white mt-2">
+              <button
+                onClick={closeNotification}
+                className="bg-green-500 text-white mt-2 px-4 py-2 rounded-lg w-full hover:bg-green-600 transition-colors"
+              >
                 {buttonText}
               </button>
             

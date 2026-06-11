@@ -14,9 +14,10 @@ export interface ServiceTypes {
   registerUser: { email: string; password: string };
   loginUser: { email: string; password: string };
   resetPassword: { email: string; };
-  getUserById: string;
-  getTechniques: null;
+  getUserById: undefined;
+  getTechniques: undefined;
   getSessions: string;
+  createSession: object;
 }
 
 export interface UserI {
@@ -44,6 +45,7 @@ export interface AppStoreI {
 }
 
 export interface TechniqueI {
+  _id: string;
   name: string;
   description: string;
   focus_time: number;
@@ -51,7 +53,6 @@ export interface TechniqueI {
   long_break_time: number;
   cycles_before_long_break: number;
   active_pause: boolean;
-  logout: () => void;
 }
 
 export interface StatsDataI {
