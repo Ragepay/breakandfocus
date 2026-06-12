@@ -5,7 +5,7 @@ import { PersonalInfoIcon } from "@/svg/navigator-drawer-icons";
 
 export const ProfileInfo = () => {
   return (
-    <div className="w-full max-w-[560px] px-2 md:px-6">
+    <div className="w-full max-w-[520px] mx-auto">
       <div className="h-[40px] flex items-center gap-3 mb-2">
         <div className="text-[#09BCB4]">
           <PersonalInfoIcon />

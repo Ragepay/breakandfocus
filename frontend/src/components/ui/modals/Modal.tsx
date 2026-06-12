@@ -63,31 +63,34 @@ export const Modal = () => {
           exit="exit"
         >
           <motion.div
-            className="bg-white
-                       rounded-[50px]
-                       p-[40px]
-                       flex flex-col
-                       mx-auto"
-            style={{ width: "auto", maxWidth: "90vw", maxHeight: "90vh", overflowX: "hidden", overflowY: "auto" }}
+            className="bg-white rounded-3xl flex flex-col mx-auto overflow-hidden shadow-xl"
+            style={{ width: "auto", maxWidth: "90vw", maxHeight: "85vh" }}
             variants={modalVariants}
           >
-            <div className="w-full flex justify-end sticky top-0 bg-white z-10 pb-2">
-              <button onClick={resetModalSettings} aria-label="Cerrar">
+            {/* Barra fija con la X (no se solapa con el contenido) */}
+            <div className="flex justify-end p-3 border-b border-gray-100 shrink-0">
+              <button
+                onClick={resetModalSettings}
+                aria-label="Cerrar"
+                className="text-gray-500 hover:text-gray-800 transition-colors"
+              >
                 <CrossIcon />
               </button>
             </div>
-            {/* Contenido del modal */}
-            {modalSettings.profileInfo && <ProfileInfo />}
-            {modalSettings.configPreferences && <ConfigPreferences />}
-            {modalSettings.usageHistory && <UsageHistory />}
-            {modalSettings.statsSummary && <StatsSummary />}
-            {modalSettings.statsChars && <StatsChars />}
-            {modalSettings.export && <Export />}
-            {modalSettings.notifications && <Notifications />}
-            {modalSettings.security && <Security />}
-            {modalSettings.faq && <Faq />}
-            {modalSettings.supportContact && <SupportContact />}
-            {modalSettings.tutorialsAndGuides && <TutorialsAndGuides />}
+            {/* Contenido scrolleable */}
+            <div className="overflow-y-auto px-6 pb-6 pt-4 md:px-8">
+              {modalSettings.profileInfo && <ProfileInfo />}
+              {modalSettings.configPreferences && <ConfigPreferences />}
+              {modalSettings.usageHistory && <UsageHistory />}
+              {modalSettings.statsSummary && <StatsSummary />}
+              {modalSettings.statsChars && <StatsChars />}
+              {modalSettings.export && <Export />}
+              {modalSettings.notifications && <Notifications />}
+              {modalSettings.security && <Security />}
+              {modalSettings.faq && <Faq />}
+              {modalSettings.supportContact && <SupportContact />}
+              {modalSettings.tutorialsAndGuides && <TutorialsAndGuides />}
+            </div>
           </motion.div>
         </motion.div>
       )}
