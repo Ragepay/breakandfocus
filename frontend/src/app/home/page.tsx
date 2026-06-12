@@ -71,6 +71,34 @@ function Home() {
     }
   }, []);
 
+  // Alarma sonora: pequeño campaneo con Web Audio (sin assets, funciona offline)
+  const playAlarm = useCallback(() => {
+    try {
+      const Ctx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new Ctx();
+      const beep = (freq: number, start: number, dur: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime + start);
+        gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + start + dur);
+        osc.start(ctx.currentTime + start);
+        osc.stop(ctx.currentTime + start + dur);
+      };
+      beep(880, 0, 0.25);
+      beep(1175, 0.28, 0.3);
+      beep(880, 0.6, 0.4);
+    } catch {
+      /* audio no disponible en este navegador */
+    }
+  }, []);
+
   useEffect(() => {
     if (Notification.permission === "default") {
       Notification.requestPermission();
@@ -108,13 +136,18 @@ function Home() {
     }
   }, [localTechniques]);
 
-  // Auto-selecciona la primera técnica para que "Comenzar" quede habilitado de entrada
+  // Auto-selecciona la primera técnica (con los tiempos guardados en localStorage si existen)
+  // para que "Comenzar" quede habilitado de entrada.
   useEffect(() => {
     if (!currentTechnique && techniques.length > 0) {
       const t = techniques[0];
-      setCurrentTechnique(t);
-      setTimer(t.focus_time * factor);
-      setBreakTime(t.break_time * factor);
+      const savedFocus = Number(localStorage.getItem("bf_focusMin"));
+      const savedBreak = Number(localStorage.getItem("bf_breakMin"));
+      const focus = savedFocus > 0 ? savedFocus : t.focus_time;
+      const brk = savedBreak > 0 ? savedBreak : t.break_time;
+      setCurrentTechnique({ ...t, focus_time: focus, break_time: brk });
+      setTimer(focus * factor);
+      setBreakTime(brk * factor);
       setIsWorkTime(true);
     }
   }, [techniques, currentTechnique]);
@@ -174,10 +207,12 @@ function Home() {
         showSystemNotification("¡Es hora de tu break largo!");
         setSession(1);
       }
+      if (localStorage.getItem("bf_alarm") !== "off") playAlarm();
       setShowNotification(true);
       setIsRunning(false); // Pausa hasta cerrar la notificación
     } else if (timer === 0 && !isWorkTime) {
       // Terminó el break -> vuelve al enfoque y registra la sesión (tiempos en segundos)
+      if (localStorage.getItem("bf_alarm") !== "off") playAlarm();
       setIsWorkTime(true);
       setTimer((currentTechnique?.focus_time ?? 25) * factor);
       setSession(session + 1);
@@ -212,7 +247,7 @@ function Home() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning, timer, isWorkTime, getRandomButtonText, showSystemNotification, breakTime, currentTechnique, session, userId, techniqueid]);
+  }, [isRunning, timer, isWorkTime, getRandomButtonText, showSystemNotification, playAlarm, breakTime, currentTechnique, session, userId, techniqueid]);
 
   const closeNotification = () => {
     setShowNotification(false);
@@ -237,6 +272,34 @@ function Home() {
     setBreakTime(technique.break_time * factor);
     setIsWorkTime(true);
   }
+
+  // Edición de tiempos desde el lápiz: actualiza la técnica actual, reinicia el timer
+  // y persiste la preferencia en localStorage.
+  function applyCustomTime(focusMin: number, breakMin: number): void {
+    setCurrentTechnique((prev) =>
+      prev ? { ...prev, focus_time: focusMin, break_time: breakMin } : prev
+    );
+    setIsWorkTime(true);
+    setIsRunning(false);
+    setTimer(focusMin * factor);
+    setBreakTime(breakMin * factor);
+    sessionStartRef.current = null;
+    localStorage.setItem("bf_focusMin", String(focusMin));
+    localStorage.setItem("bf_breakMin", String(breakMin));
+  }
+
+  // Restablece el timer a los valores por defecto de la primera técnica
+  function resetConfig(): void {
+    const t = techniques[0];
+    if (t) {
+      setCurrentTechnique(t);
+      setTimer(t.focus_time * factor);
+      setBreakTime(t.break_time * factor);
+    }
+    setIsWorkTime(true);
+    setIsRunning(false);
+    sessionStartRef.current = null;
+  }
   return (
     <div className="min-h-screen  flex flex-col items-center justify-around p-4">
       <button className="absolute bottom-20 right-4 bg-green-50 p-2 rounded-xl shadow-lg shadow-gray-500/50" onClick={toggleUserMenu}>
@@ -246,7 +309,14 @@ function Home() {
         isMenuOpen={isUserMenuOpen}
         toggleUserMenu={toggleUserMenu}
       >
-        <Configuration toggleOptions={toggleUserMenu} />
+        <Configuration
+          toggleOptions={toggleUserMenu}
+          focusMinutes={currentTechnique?.focus_time ?? 25}
+          breakMinutes={currentTechnique?.break_time ?? 5}
+          onTimeChange={applyCustomTime}
+          onTestSound={playAlarm}
+          onReset={resetConfig}
+        />
       </UserMenu>
       <main className="text-2xl md:container md:mx-auto px-4 py-8 max-w-2xl ">
 

@@ -1,6 +1,5 @@
 "use client";
 import { PrivateNav } from "@/components/ui/nav/PrivateNav";
-import { PublicNav } from "@/components/ui/nav/PublicNav";
 import { appStore } from "@/store";
 import { AppLogo } from "@/svg/AppLogo";
 import Link from "next/link";
@@ -30,7 +29,7 @@ export const Header = () => {
               <AppLogo />
             </Link>
           </div>
-          {token ? <PrivateNav /> : <PublicNav />}
+          {token ? <PrivateNav /> : null}
         </div>
       </div>
     </header>

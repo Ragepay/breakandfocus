@@ -68,11 +68,11 @@ export const Modal = () => {
                        p-[40px]
                        flex flex-col
                        mx-auto"
-            style={{ width: "auto", maxWidth: "90vw", overflowX: "auto" }}
+            style={{ width: "auto", maxWidth: "90vw", maxHeight: "90vh", overflowX: "hidden", overflowY: "auto" }}
             variants={modalVariants}
           >
-            <div className="w-full flex justify-end">
-              <button onClick={resetModalSettings}>
+            <div className="w-full flex justify-end sticky top-0 bg-white z-10 pb-2">
+              <button onClick={resetModalSettings} aria-label="Cerrar">
                 <CrossIcon />
               </button>
             </div>

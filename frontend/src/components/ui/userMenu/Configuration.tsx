@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X,ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SpotifyLogo } from "@/svg/SpotifyLogo";
 import { Sound } from "@/svg/SoundIcon";
 import { Time } from "@/svg/TimeIcon";
 import { Fondo } from "@/svg/FondoIcon";
@@ -9,6 +8,11 @@ import { Separator } from "../separator";
 
 interface ConfigurationProps {
   toggleOptions: () => void;
+  focusMinutes: number;
+  breakMinutes: number;
+  onTimeChange: (focusMin: number, breakMin: number) => void;
+  onTestSound: () => void;
+  onReset: () => void;
 }
 
 const colorOptions = [
@@ -46,17 +50,62 @@ const imageOptions = [
 
 const setBgImage = (imageUrl: string) => {
   document.body.style.backgroundImage = `url(${imageUrl})`;
+  document.body.style.backgroundSize = "cover";
+  document.body.style.backgroundPosition = "center";
+  document.body.style.backgroundRepeat = "no-repeat";
+  document.body.style.backgroundAttachment = "fixed";
   document.body.style.backgroundColor = "";
   localStorage.setItem("bgImage", imageUrl);
   localStorage.removeItem("bgColor");
 };
 
 
-export const Configuration: React.FC<ConfigurationProps> = ({ toggleOptions }) => {
+export const Configuration: React.FC<ConfigurationProps> = ({ toggleOptions, focusMinutes, breakMinutes, onTimeChange, onTestSound, onReset }) => {
   const [selectedColor, setSelectedColor] = useState<number | null>(null);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [isColorGridVisible, setIsColorGridVisible] = useState(false);
   const [isImageGridVisible, setIsImageGridVisible] = useState(false);
+  const [focusInput, setFocusInput] = useState(String(focusMinutes));
+  const [breakInput, setBreakInput] = useState(String(breakMinutes));
+
+  useEffect(() => { setFocusInput(String(focusMinutes)); }, [focusMinutes]);
+  useEffect(() => { setBreakInput(String(breakMinutes)); }, [breakMinutes]);
+
+  const applyTime = (focusStr: string, breakStr: string) => {
+    const f = parseInt(focusStr, 10);
+    const b = parseInt(breakStr, 10);
+    if (!Number.isNaN(f) && f > 0 && !Number.isNaN(b) && b > 0) onTimeChange(f, b);
+  };
+
+  // Alarma sonora on/off (persistida)
+  const [alarmOn, setAlarmOn] = useState(true);
+  useEffect(() => { setAlarmOn(localStorage.getItem("bf_alarm") !== "off"); }, []);
+  const toggleAlarm = () => {
+    setAlarmOn((prev) => {
+      const next = !prev;
+      localStorage.setItem("bf_alarm", next ? "on" : "off");
+      return next;
+    });
+  };
+
+  const clearBackground = () => {
+    document.body.style.backgroundImage = "none";
+    document.body.style.backgroundColor = "";
+    localStorage.removeItem("bgImage");
+    localStorage.removeItem("bgColor");
+    setSelectedColor(null);
+    setSelectedImage(null);
+  };
+
+  // Restablece toda la configuración (tiempos, fondo, alarma) y avisa al timer
+  const handleReset = () => {
+    clearBackground();
+    localStorage.removeItem("bf_focusMin");
+    localStorage.removeItem("bf_breakMin");
+    localStorage.setItem("bf_alarm", "on");
+    setAlarmOn(true);
+    onReset();
+  };
 
   const toggleColorGrid = () => {
     setIsColorGridVisible(!isColorGridVisible);
@@ -91,7 +140,17 @@ export const Configuration: React.FC<ConfigurationProps> = ({ toggleOptions }) =
               <label htmlFor="focus-time" className="h-[20px] font-roboto flex text-[#4A4459] items-center text-md font-light mb-1">
                 Enfoque
               </label>
-              <input type="number" id="focus-time" className="font-roboto text-[#4A4459] w-20 p-2 border rounded" defaultValue={52} />
+              <input
+                type="number"
+                id="focus-time"
+                min={1}
+                className="font-roboto text-[#4A4459] w-20 p-2 border rounded"
+                value={focusInput}
+                onChange={(e) => {
+                  setFocusInput(e.target.value);
+                  applyTime(e.target.value, breakInput);
+                }}
+              />
             </div>
             
             {/* Configuración del descanso */}
@@ -99,7 +158,17 @@ export const Configuration: React.FC<ConfigurationProps> = ({ toggleOptions }) =
               <label htmlFor="break-time" className="h-[20px] font-roboto flex text-[#4A4459] items-center text-md font-light mb-1">
                 Descanso
               </label>
-              <input type="number" id="break-time" className="font-roboto text-[#4A4459] w-20 p-2 border rounded" defaultValue={17} />
+              <input
+                type="number"
+                id="break-time"
+                min={1}
+                className="font-roboto text-[#4A4459] w-20 p-2 border rounded"
+                value={breakInput}
+                onChange={(e) => {
+                  setBreakInput(e.target.value);
+                  applyTime(focusInput, e.target.value);
+                }}
+              />
             </div>
           </div>
         </div>
@@ -115,28 +184,24 @@ export const Configuration: React.FC<ConfigurationProps> = ({ toggleOptions }) =
           </div>
         
           <div className="space-y-4">
-            <div>
-              <label htmlFor="alarm-sound" className="h-[20px] font-roboto flex text-[#4A4459] items-center text-md font-light mb-1">
-                Sonido de Alarma
-              </label>
-              <select id="alarm-sound" className="font-roboto text-[#4A4459] w-full p-2 border rounded">
-                <option>Birds</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="focus-music" className="h-[20px] font-roboto flex text-[#4A4459] items-center text-md font-light mb-1">Música para enfocarme</label>
-              <div className="flex items-center gap-2">
-                <input type="text" id="focus-music" className="flex-grow p-2 border rounded" placeholder="Arma tu lista en" readOnly />
-                <SpotifyLogo />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="break-music" className="h-[20px] font-roboto flex text-[#4A4459] items-center text-md font-light mb-1">Música para el break</label>
-              <div className="flex items-center gap-2">
-                <input type="text" id="break-music" className="flex-grow p-2 border rounded" placeholder="Arma tu lista en" readOnly />
-                <SpotifyLogo />
-              </div>
-            </div>
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="font-roboto text-[#4A4459] text-md font-light">
+                Alarma al terminar cada bloque
+              </span>
+              <input
+                type="checkbox"
+                checked={alarmOn}
+                onChange={toggleAlarm}
+                className="h-5 w-5 accent-emerald-500"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={onTestSound}
+              className="font-roboto text-[#2563eb] text-sm border border-[#2563eb] rounded px-3 py-1 hover:bg-blue-50"
+            >
+              Probar sonido
+            </button>
           </div>
         </div>
         
@@ -215,7 +280,23 @@ export const Configuration: React.FC<ConfigurationProps> = ({ toggleOptions }) =
               </motion.div>
             )}
           </AnimatePresence>
+
+          <button
+            type="button"
+            onClick={clearBackground}
+            className="mt-4 w-full font-roboto text-[#4A4459] text-sm border rounded px-3 py-2 hover:bg-gray-50"
+          >
+            Quitar fondo
+          </button>
         </div>
+
+        <button
+          type="button"
+          onClick={handleReset}
+          className="mt-6 w-full font-roboto text-white text-sm bg-[#2563eb] hover:bg-blue-700 rounded px-3 py-2"
+        >
+          Restablecer configuración
+        </button>
       </div>
     </>
   );

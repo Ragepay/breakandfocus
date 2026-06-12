@@ -6,10 +6,11 @@ import "./globals.css";
 import { Loader } from "@/components/ui/Loader";
 import { Toaster } from "sonner";
 import { Header } from "./common/Header";
-// import Footer from "./common/Footer";
+import Footer from "./common/Footer";
 import { metadata } from "./config";
 import { useRouteChangeLoader } from "@/hooks/useRouteChangeLoader";
 import { Modal } from "@/components/ui/modals/Modal";
+import { useEffect } from "react";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -40,6 +41,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   useRouteChangeLoader(); // oculta el loader cuando cambia de ruta.
+
+  // Restaura el fondo guardado (color o imagen) en cualquier página
+  useEffect(() => {
+    const img = localStorage.getItem("bgImage");
+    const color = localStorage.getItem("bgColor");
+    if (img) {
+      document.body.style.backgroundImage = `url(${img})`;
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
+      document.body.style.backgroundRepeat = "no-repeat";
+      document.body.style.backgroundAttachment = "fixed";
+    } else if (color) {
+      document.body.style.backgroundColor = color;
+    }
+  }, []);
+
   return (
     <html lang="es">
       <head>
@@ -54,7 +71,7 @@ export default function RootLayout({
         <Loader />
         <Toaster richColors />
         {children}
-        {/* <Footer /> */}
+        <Footer />
       </body>
     </html>
   );

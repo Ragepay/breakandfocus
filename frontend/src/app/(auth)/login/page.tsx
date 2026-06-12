@@ -33,8 +33,12 @@ export default function LoginPage() {
     const { status, response, message } = await fetchData("loginUser", formState);
 
     if (status) {
-      const { _id, email, role } = response.data;
-      const token = response.token;
+      const res = response as {
+        data: { _id: string; email: string; role: string };
+        token: string;
+      };
+      const { _id, email, role } = res.data;
+      const token = res.token;
 
       toast.success("Usuario correcto");
       setUser({ token, userData: { _id, email, role } });

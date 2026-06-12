@@ -1,57 +1,56 @@
 import Link from "next/link";
-// import { Input } from "@/components/ui/input";
-// import { Button } from "@/components/ui/button";
-// import { Twitter, Instagram, Youtube, Linkedin, Send } from "lucide-react";
 import { XLogo } from "@/svg/XLogo";
 import { InstagramLogo } from "@/svg/InstagramLogo";
 import { YouTubeLogo } from "@/svg/YouTubeLogo";
 import { LinkedinLogo } from "@/svg/LinkedinLogo";
-import { EmailLogo } from "@/svg/EmailLogo";
+
+const socials = [
+  { href: "https://x.com", label: "X (Twitter)", Logo: XLogo },
+  { href: "https://instagram.com", label: "Instagram", Logo: InstagramLogo },
+  { href: "https://youtube.com", label: "YouTube", Logo: YouTubeLogo },
+  { href: "https://linkedin.com", label: "LinkedIn", Logo: LinkedinLogo },
+];
 
 export default function Footer() {
   return (
     <footer className="border-t border-t-[1px] border-t-[#D9D9D9] bg-[#DFF7F2] xl:mx-[40px]">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Redes (abren la red en una pestaña nueva) */}
           <div className="flex space-x-4">
-            <Link href="#" className="text-gray-600 hover:text-gray-900">
-              <XLogo />
-              <span className="sr-only">Twitter</span>
-            </Link>
-            <Link href="#" className="text-gray-600 hover:text-gray-900">
-              <InstagramLogo />
-              <span className="sr-only">Instagram</span>
-            </Link>
-            <Link href="#" className="text-gray-600 hover:text-gray-900">
-              <YouTubeLogo />
-              <span className="sr-only">YouTube</span>
-            </Link>
-            <Link href="#" className="text-gray-600 hover:text-gray-600">
-              <LinkedinLogo />
-              <span className="sr-only">LinkedIn</span>
-            </Link>
+            {socials.map(({ href, label, Logo }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <Logo />
+                <span className="sr-only">{label}</span>
+              </a>
+            ))}
           </div>
 
+          {/* Navegación interna (todos los links funcionan) */}
           <div className="grid grid-cols-2 gap-8">
             <div>
-              <h3 className="font-semibold mb-2 text-[#0859A3]">
-                Sobre Break&Focus
-              </h3>
+              <h3 className="font-semibold mb-2 text-[#0859A3]">Break&amp;Focus</h3>
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-[#1E1E1E] text-[16px] font-inter hover:text-gray-600"
                   >
-                    Equipo
+                    Inicio
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/home"
                     className="text-[#1E1E1E] text-[16px] font-inter hover:text-gray-600"
                   >
-                    Oportunidades laborales
+                    Empezar ahora
                   </Link>
                 </li>
               </ul>
@@ -61,49 +60,33 @@ export default function Footer() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="#"
+                    href="/tecnicas"
                     className="text-[#1E1E1E] text-[16px] font-inter hover:text-gray-600"
                   >
-                    Conoce mas sobre cada Técnica
+                    Conocé las técnicas
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/como-funciona"
                     className="text-[#1E1E1E] text-[16px] font-inter hover:text-gray-600"
                   >
-                    Recursos para la productividad
+                    Cómo funciona
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
 
+          {/* Cierre simple, sin formularios que no hacen nada */}
           <div className="md:max-w-[320px]">
-            <h3 className="font-semibold mb-2 text-[#0859A3]">
-              Suscríbete a nuestro informativo
-            </h3>
-            <p className="text-[14px] font-roboto text-[#1E1E1E] mb-4">
-              Está atento a últimas novedades y actualizaciones de nuestra
-              plataforma.
+            <h3 className="font-semibold mb-2 text-[#0859A3]">Break&amp;Focus</h3>
+            <p className="text-[14px] font-roboto text-[#1E1E1E]">
+              Gestioná tu tiempo de forma inteligente: enfoque, pausas y a rendir mejor.
             </p>
-            <form className="flex space-x-2">
-              {/*<Input type="email" placeholder="E-Mail" className="flex-grow" />
-              <Button type="submit" variant="outline">
-                <Send className="h-4 w-4" />
-                <span className="sr-only">Subscribe</span>
-              </Button>*/}
-              <div className="relative w-full">
-                <input
-                  type="email"
-                  className="w-full h-[32px] border border-[#D9D9D9] focus:outline-none hover:outline-none rounded-none pl-[16px] text-left text-[14px] font-roboto font-normal leading-[22px]"
-                  placeholder="E-mail"
-                />
-                <button type="button" className="absolute right-2 top-1">
-                  <EmailLogo />
-                </button>
-              </div>
-            </form>
+            <p className="text-[12px] font-roboto text-gray-500 mt-4">
+              © {2025} Break&amp;Focus. Hecho para concentrarte mejor.
+            </p>
           </div>
         </div>
       </div>
